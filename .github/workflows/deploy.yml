@@ -2,9 +2,9 @@ name: CI/CD Pipeline for Quasar to GitHub Pages
 
 on:
   push:
-    branches: [ "master", "main", "cicd" ]
+    branches: [ "cicd" ]
   pull_request:
-    branches: [ "master", "main", "cicd" ]
+    branches: [ "cicd" ]
 
 jobs:
   build-deploy:
