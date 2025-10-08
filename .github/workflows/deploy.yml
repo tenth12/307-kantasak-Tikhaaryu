@@ -1,15 +1,21 @@
-name: CI/CD Pipeline for Quasar
+name: CI/CD Pipeline for Quasar to GitHub Pages
+
 on:
   push:
     branches: [ "master", "main" ]
   pull_request:
     branches: [ "master", "main" ]
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
@@ -17,22 +23,24 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-            
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          
-      - name: Install and Build
+          node-version: '20'
+
+      - name: Install dependencies & Build
         run: |
           npm install
           npx quasar build
-          
-      - name: Copy index.html to 404.html
-        if: github.ref == 'refs/heads/master'
-        run: cp dist/spa/index.html dist/spa/404.html
-        
+
+      - name: Copy index.html to 404.html (for SPA fallback)
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        run: |
+          cp dist/spa/index.html dist/spa/404.html || true
+
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
